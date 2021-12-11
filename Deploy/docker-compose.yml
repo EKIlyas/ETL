@@ -1,0 +1,73 @@
+version: '3'
+
+services:
+  admin:
+    build:
+      context: ..
+      dockerfile: Deploy/admin/Dockerfile
+    depends_on:
+      - db
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
+    env_file:
+      - admin/.env
+
+  db:
+    image: postgres:13
+    container_name: cinema_db
+    environment:
+      - POSTGRES_PASSWORD=cinema
+      - POSTGRES_USER=cinema
+      - POSTGRES_DB=cinema
+    ports:
+    - 10001:5432
+    volumes:
+      - cinema_data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:1.19.2
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx_site_conf:/etc/nginx/conf.d
+      - static_volume:/usr/src/app/staticfiles/
+      - media_volume:/usr/src/app/mediafiles/
+    expose:
+      - 80
+  redis:
+    image: redis:6-alpine
+    container_name: cinema_redis
+    restart: unless-stopped
+    volumes:
+      - ./redis/data:/data
+    ports:
+      - 10002:5432
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    container_name: cinema_elastic
+    environment:
+      - node.name=elasticcinema01
+      - discovery.type=single-node
+    volumes:
+      - ./elastic/data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+  pg2es:
+    restart: 'no'
+    container_name: cinema_pg2es
+    env_file:
+      - postgres_to_es/.env
+    build:
+      context: ..
+      dockerfile: Deploy/postgres_to_es/Dockerfile
+    depends_on:
+      - db
+      - redis
+      - elastic
+
+volumes:
+  cinema_data:
+  static_volume:
+  media_volume:
+

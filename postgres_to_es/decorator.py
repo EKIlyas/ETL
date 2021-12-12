@@ -25,7 +25,7 @@ def _sleep_time(start_sleep_time: float, border_sleep_time: float, factor: int, 
     return min(border_sleep_time, sleep_time)
 
 
-def backoff(start_sleep_time=0.1, border_sleep_time=30, factor=2, jitter=True):
+def backoff(start_sleep_time=0.1, border_sleep_time=30, factor=2, jitter=True, logger_=logger):
     """
     start_sleep_time - time for wich all backoff process always will be sleep
     border_sleep_time - maximum time wich procces will be wait, if service will not answer
@@ -33,7 +33,7 @@ def backoff(start_sleep_time=0.1, border_sleep_time=30, factor=2, jitter=True):
     jitter - if True, proccess will be sleep random time between start_sleep_time and start_sleep_time * factor
     """
     if start_sleep_time < 0.001:
-        logger.warning('start_sleep_time fewer than 0.001 and will be set to 0.001')
+        logger_.warning('start_sleep_time fewer than 0.001 and will be set to 0.001')
         start_sleep_time = 0.001
 
     def decorator(target):
@@ -47,8 +47,8 @@ def backoff(start_sleep_time=0.1, border_sleep_time=30, factor=2, jitter=True):
                     sleep(sleep_time)
                     ret = target(*args, **kwargs)
                 except Exception as e:
-                    logger.error(f'Exception is catched {e}')
-                    logger.warning(f'Wait fo {sleep_time} seconds and try again')
+                    logger_.error(f'Exception is catched {e}')
+                    logger_.warning(f'Wait fo {sleep_time} seconds and try again')
                 else:
                     return ret
         return retry

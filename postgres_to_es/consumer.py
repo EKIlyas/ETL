@@ -23,7 +23,7 @@ class ETLConsumer:
         self.pgbase = ETLPG()
         self.es = ETLElastic()
 
-    def get_filmsid_from_redis(self, putter) -> List[ETLFilmWork]:
+    def get_filmsid_from_redis(self, putter) -> None:
         while self.redis.get_status('consumer') == 'run':
             idlists = self.redis.get_filmid_for_work(self.limit)
             films = self.pgbase.get_filmsbyid(tuple(idlists)) if len(idlists) > 0 else []

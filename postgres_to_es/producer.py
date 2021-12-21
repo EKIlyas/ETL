@@ -8,6 +8,7 @@ from settings import ETLSettings
 
 
 class ETLProducer:
+    # from web vscode
     producer_table = [
         ETLProducerTable(table='film_work', isrelation=False),
         ETLProducerTable(table='person', field='film_work_id', ptable='person_film_work', pfield='person_id'),
